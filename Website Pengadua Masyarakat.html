@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Pengaduan Masyarakat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background: #0080ff8c;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background: #0080ff8c;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .complaint-list {
+            margin-top: 20px;
+        }
+        .complaint-item {
+            background: #f8f8f8;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .image-preview {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+        .delete-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .delete-button:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Website Pengaduan Masyarakat</h1>
+</header>
+
+<div class="container">
+    <h2>Ajukan Pengaduan</h2>
+    <select id="category" required>
+        <option value="">Pilih Kategori</option>
+        <option value="Kebersihan">Kebersihan</option>
+        <option value="Keamanan">Keamanan</option>
+        <option value="Infrastruktur">Infrastruktur</option>
+        <option value="Layanan Publik">Layanan Publik</option>
+    </select><br><br>
+    <textarea id="complaint" rows="4" placeholder="Deskripsi Pengaduan" required></textarea><br>
+    <input type="text" id="location" placeholder="Lokasi" required /><br>
+    <input type="file" id="photo" accept="image/*" onchange="previewImage(event)" /><br>
+    <img id="imagePreview" class="image-preview" style="display:none;" /><br>
+    <button onclick="submitComplaint()">Kirim Pengaduan</button>
+
+    <input type="text" id="search" placeholder="Cari Pengaduan" oninput="searchComplaints()" />
+
+    <div class="complaint-list" id="complaintList">
+        <h3>Riwayat Pengaduan</h3>
+    </div>
+</div>
+
+<script>
+    const complaints = [];
+
+    function previewImage(event) {
+        const imagePreview = document.getElementById('imagePreview');
+        imagePreview.style.display = 'block';
+        imagePreview.src = URL.createObjectURL(event.target.files[0]);
+    }
+
+    function submitComplaint() {
+        const complaintText = document.getElementById('complaint').value;
+        const locationText = document.getElementById('location').value;
+        const imageFile = document.getElementById('photo').files[0];
+        const categoryText = document.getElementById('category').value;
+
+        if (complaintText && locationText && categoryText) {
+            const complaintData = {
+                text: complaintText,
+                location: locationText,
+                category: categoryText,
+                image: imageFile ? URL.createObjectURL(imageFile) : null
+            };
+            complaints.push(complaintData);
+            document.getElementById('complaint').value = '';
+            document.getElementById('location').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('photo').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            displayComplaints();
+        } else {
+            alert('Silakan masukkan deskripsi, lokasi, dan kategori pengaduan.');
+        }
+    }
+
+    function deleteComplaint(index) {
+        complaints.splice(index, 1); // Hapus pengaduan dari array
+        displayComplaints(); // Tampilkan ulang daftar pengaduan
+    }
+
+    function displayComplaints(complaintsToDisplay = complaints) {
+        const complaintList = document.getElementById('complaintList');
+        complaintList.innerHTML = '<h3>Riwayat Pengaduan</h3>'; // reset the list
+        complaintsToDisplay.forEach((complaint, index) => {
+            complaintList.innerHTML += `
+                <div class="complaint-item">
+                    <strong>Pengaduan ${index + 1}:</strong> ${complaint.text}<br>
+                    <strong>Lokasi:</strong> ${complaint.location}<br>
+                    <strong>Kategori:</strong> ${complaint.category}<br>
+                    ${complaint.image ? `<img src="${complaint.image}" class="image-preview" />` : ''}
+                    <br>
+                    <button class="delete-button" onclick="deleteComplaint(${index})">Hapus Pengaduan</button>
+                </div>`;
+        });
+    }
+
+    function searchComplaints() {
+        const searchText = document.getElementById('search').value.toLowerCase();
+        const filteredComplaints = complaints.filter(complaint => 
+            complaint.text.toLowerCase().includes(searchText) || 
+            complaint.location.toLowerCase().includes(searchText || 
+            complaint.category.toLowerCase().includes(searchText))
+        );
+        displayComplaints(filteredComplaints);
+    }
+</script>
+
+</body>
+</html>
